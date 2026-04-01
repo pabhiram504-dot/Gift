@@ -28,6 +28,12 @@
             border-radius: 8px;
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
         #scare-screen {
             display: none;
@@ -59,14 +65,23 @@
             object-fit: cover;
         }
         h1 { margin: 10px 0; font-size: 28px; }
+        
+        /* Flashing red background effect for the siren */
+        .flashing {
+            animation: flashWarning 0.4s infinite alternate;
+        }
+        @keyframes flashWarning {
+            from { background-color: #000; }
+            to { background-color: #3a0000; }
+        }
     </style>
 </head>
 <body>
 
     <!-- Phase 1: The Bait -->
     <div id="start-screen">
-        <h2 style="color: white; font-family: Arial;">I made a small web app for our home planning ❤️</h2>
-        <p style="color: #ccc; font-family: Arial;">Tap below to open it. Make sure your volume is up!</p>
+        <h2 style="color: white; font-family: Arial;">I made a small web app for our house planning ❤️</h2>
+        <p style="color: #ccc; font-family: Arial;">Make sure your volume is all the way up!</p>
         <button onclick="startPrank()">Open Surprise</button>
     </div>
 
@@ -77,44 +92,58 @@
 
     <!-- Phase 3: The Reveal -->
     <div id="reveal-screen">
-        <!-- Notice the exact spelling of Us.jpeg below! -->
-        <img src="Us.jpeg" alt="Us">
+        <!-- The onerror attribute here will tell you exactly why the image isn't loading! -->
+        <img src="Us.jpeg" alt="Us" onerror="alert('Image load failed! Check if the file is named EXACTLY Us.jpeg (capital U) on GitHub.')">
         <h1>Happy April Fools!</h1>
         <h2>You my beautfool 🤡❤️</h2>
     </div>
 
     <script>
         let audioCtx;
+        let sirenOsc;
+        let sirenInterval;
 
-        // Function to create a harsh "BEEP" sound
-        function playBeep() {
-            if (!audioCtx) return;
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-
-            oscillator.type = 'square'; // Creates a harsh, electronic sound
-            oscillator.frequency.value = 850; // Pitch of the beep
-
-            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); // Volume
-
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-
-            oscillator.start();
-            setTimeout(() => oscillator.stop(), 150); // Beep lasts 150 milliseconds
-        }
-
-        function startPrank() {
-            // Initialize audio on the first tap (browsers require this)
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (audioCtx.state === 'suspended') {
+        function startSiren() {
+            // Browsers require audio to be initialized after a user click
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === "suspended") {
                 audioCtx.resume();
             }
 
-            document.getElementById('start-screen').style.display = 'none';
-            document.getElementById('scare-screen').style.display = 'block';
+            // Create the loud siren generator
+            sirenOsc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            sirenOsc.type = "square"; 
+            gainNode.gain.value = 1.0; // 100% MAXIMUM VOLUME
+
+            sirenOsc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            sirenOsc.start();
+
+            // Alternate pitch every 400ms to sound like a nuclear/police siren
+            let isHigh = false;
+            sirenInterval = setInterval(() => {
+                sirenOsc.frequency.setValueAtTime(isHigh ? 900 : 600, audioCtx.currentTime);
+                isHigh = !isHigh;
+            }, 400);
+        }
+
+        function stopSiren() {
+            if (sirenOsc) {
+                sirenOsc.stop();
+                clearInterval(sirenInterval);
+            }
+        }
+
+        function startPrank() {
+            // Trigger siren and screen flash immediately
+            startSiren();
+            document.body.classList.add("flashing");
+
+            document.getElementById("start-screen").style.display = "none";
+            document.getElementById("scare-screen").style.display = "block";
 
             const logs = [
                 "WARNING: UNRECOGNIZED DEVICE...",
@@ -128,29 +157,26 @@
             ];
 
             let i = 0;
-            const terminal = document.getElementById('terminal-output');
+            const terminal = document.getElementById("terminal-output");
 
             const interval = setInterval(() => {
                 if (i < logs.length) {
                     terminal.innerHTML += `<p>${logs[i]}</p>`;
-                    // Play the beep unless it's the final cute line
-                    if (i < logs.length - 1) {
-                        playBeep();
-                    }
                     i++;
                 } else {
+                    // Turn everything off when the cute screen arrives
                     clearInterval(interval);
-                    setTimeout(showReveal, 1500);
+                    stopSiren();
+                    document.body.classList.remove("flashing");
+                    setTimeout(showReveal, 1000);
                 }
-            }, 1200); 
+            }, 1200);
         }
 
         function showReveal() {
             document.body.style.backgroundColor = "#ffe6ea";
-            document.getElementById('scare-screen').style.display = 'none';
-            
-            const reveal = document.getElementById('reveal-screen');
-            reveal.style.display = 'flex';
+            document.getElementById("scare-screen").style.display = "none";
+            document.getElementById("reveal-screen").style.display = "flex";
         }
     </script>
 </body>
