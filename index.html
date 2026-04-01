@@ -66,7 +66,6 @@
         }
         h1 { margin: 10px 0; font-size: 28px; }
         
-        /* Flashing red background effect for the siren */
         .flashing {
             animation: flashWarning 0.4s infinite alternate;
         }
@@ -78,22 +77,18 @@
 </head>
 <body>
 
-    <!-- Phase 1: The Bait -->
     <div id="start-screen">
-        <h2 style="color: white; font-family: Arial;">I made a small web app for our house planning ❤️</h2>
+        <h2 style="color: white; font-family: Arial;">I made a small web app for our home planning ❤️</h2>
         <p style="color: #ccc; font-family: Arial;"></p>
         <button onclick="startPrank()">Open Surprise</button>
     </div>
 
-    <!-- Phase 2: The Scare -->
     <div id="scare-screen">
         <div id="terminal-output"></div>
     </div>
 
-    <!-- Phase 3: The Reveal -->
     <div id="reveal-screen">
-        <!-- The onerror attribute here will tell you exactly why the image isn't loading! -->
-        <img src="Us.jpeg" alt="Us" onerror="alert('Image load failed! Check if the file is named EXACTLY Us.jpeg (capital U) on GitHub.')">
+        <img src="Us.jpeg" alt="Us" onerror="alert('Image load failed! Check if the file is named EXACTLY Us.jpeg on GitHub.')">
         <h1>Happy April Fools!</h1>
         <h2>You my beautfool 🤡❤️</h2>
     </div>
@@ -102,27 +97,25 @@
         let audioCtx;
         let sirenOsc;
         let sirenInterval;
+        
+        // Link to the famous Wow meme sound
+        const wowAudio = new Audio("https://www.myinstants.com/media/sounds/anime-wow-sound-effect.mp3");
 
         function startSiren() {
-            // Browsers require audio to be initialized after a user click
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === "suspended") {
-                audioCtx.resume();
-            }
+            if (audioCtx.state === "suspended") audioCtx.resume();
 
-            // Create the loud siren generator
             sirenOsc = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
 
             sirenOsc.type = "square"; 
-            gainNode.gain.value = 1.0; // 100% MAXIMUM VOLUME
+            gainNode.gain.value = 1.0; 
 
             sirenOsc.connect(gainNode);
             gainNode.connect(audioCtx.destination);
             
             sirenOsc.start();
 
-            // Alternate pitch every 400ms to sound like a nuclear/police siren
             let isHigh = false;
             sirenInterval = setInterval(() => {
                 sirenOsc.frequency.setValueAtTime(isHigh ? 900 : 600, audioCtx.currentTime);
@@ -138,7 +131,13 @@
         }
 
         function startPrank() {
-            // Trigger siren and screen flash immediately
+            // Pre-load the meme sound silently so the browser allows it later
+            wowAudio.play().then(() => {
+                wowAudio.pause();
+                wowAudio.currentTime = 0;
+            }).catch(e => console.log("Audio prep failed, will try again"));
+
+            // Start the scary siren and flashing
             startSiren();
             document.body.classList.add("flashing");
 
@@ -164,11 +163,15 @@
                     terminal.innerHTML += `<p>${logs[i]}</p>`;
                     i++;
                 } else {
-                    // Turn everything off when the cute screen arrives
                     clearInterval(interval);
                     stopSiren();
                     document.body.classList.remove("flashing");
-                    setTimeout(showReveal, 1000);
+                    
+                    // Show the photo and play the WOW sound!
+                    setTimeout(() => {
+                        showReveal();
+                        wowAudio.play();
+                    }, 200);
                 }
             }, 1200);
         }
