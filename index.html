@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surprise!</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #000;
+            color: #00ff00;
+            text-align: center;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.5s, color 0.5s;
+        }
+        #start-screen { padding: 20px; }
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            background-color: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        #scare-screen {
+            display: none;
+            font-size: 18px;
+            color: #ff4757;
+            text-align: left;
+            width: 80%;
+            max-width: 400px;
+        }
+        #reveal-screen {
+            display: none;
+            font-family: 'Arial', sans-serif;
+            background-color: #ffe6ea;
+            color: #d63031;
+            width: 100%;
+            height: 100%;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        img {
+            max-width: 90%;
+            max-height: 50vh;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            object-fit: cover;
+        }
+        h1 { margin: 10px 0; font-size: 28px; }
+    </style>
+</head>
+<body>
+
+    <!-- Phase 1: The Bait -->
+    <div id="start-screen">
+        <h2 style="color: white; font-family: Arial;">I made a small web app for us ❤️</h2>
+        <p style="color: #ccc; font-family: Arial;">Tap below to open it.</p>
+        <button onclick="startPrank()">Open Surprise</button>
+    </div>
+
+    <!-- Phase 2: The Scare -->
+    <div id="scare-screen">
+        <div id="terminal-output"></div>
+    </div>
+
+    <!-- Phase 3: The Reveal -->
+    <div id="reveal-screen">
+        <!-- REPLACE THE SRC LINK BELOW WITH YOUR ACTUAL IMAGE URL -->
+        <Us.jpeg>
+        <h1>Happy April Fools!</h1>
+        <h2>You my beautfool 🤡❤️</h2>
+    </div>
+
+    <script>
+        function startPrank() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('scare-screen').style.display = 'block';
+
+            const logs = [
+                "WARNING: UNRECOGNIZED DEVICE...",
+                "BYPASSING SECURITY PROTOCOLS...",
+                "ACCESSING WHATSAPP DATABASE...",
+                "DOWNLOADING PRIVATE MEDIA...",
+                "INITIATING MASS DELETION IN 3...",
+                "2...",
+                "1...",
+                "FATAL ERROR: CUTE OVERLOAD DETECTED."
+            ];
+
+            let i = 0;
+            const terminal = document.getElementById('terminal-output');
+
+            // Type out the "hacking" lines one by one
+            const interval = setInterval(() => {
+                if (i < logs.length) {
+                    terminal.innerHTML += `<p>${logs[i]}</p>`;
+                    i++;
+                } else {
+                    clearInterval(interval);
+                    // Wait 1.5 seconds after the "hack" finishes, then show the picture
+                    setTimeout(showReveal, 1500);
+                }
+            }, 1000); // 1 second between each scary line
+        }
+
+        function showReveal() {
+            // Change background to cute colors and show the image/message
+            document.body.style.backgroundColor = "#ffe6ea";
+            document.getElementById('scare-screen').style.display = 'none';
+            
+            const reveal = document.getElementById('reveal-screen');
+            reveal.style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
