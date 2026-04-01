@@ -65,8 +65,8 @@
 
     <!-- Phase 1: The Bait -->
     <div id="start-screen">
-        <h2 style="color: white; font-family: Arial;">I made our house planning web app for us ❤️</h2>
-        <p style="color: #ccc; font-family: Arial;">Tap below to open it.</p>
+        <h2 style="color: white; font-family: Arial;">I made a small web app for us ❤️</h2>
+        <p style="color: #ccc; font-family: Arial;">Tap below to open it. Make sure your volume is up!</p>
         <button onclick="startPrank()">Open Surprise</button>
     </div>
 
@@ -77,14 +77,42 @@
 
     <!-- Phase 3: The Reveal -->
     <div id="reveal-screen">
-        <!-- REPLACE THE SRC LINK BELOW WITH YOUR ACTUAL IMAGE URL -->
-        <Us.jpeg>
+        <!-- Notice the exact spelling of Us.jpeg below! -->
+        <img src="Us.jpeg" alt="Us">
         <h1>Happy April Fools!</h1>
         <h2>You my beautfool 🤡❤️</h2>
     </div>
 
     <script>
+        let audioCtx;
+
+        // Function to create a harsh "BEEP" sound
+        function playBeep() {
+            if (!audioCtx) return;
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.type = 'square'; // Creates a harsh, electronic sound
+            oscillator.frequency.value = 850; // Pitch of the beep
+
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); // Volume
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.start();
+            setTimeout(() => oscillator.stop(), 150); // Beep lasts 150 milliseconds
+        }
+
         function startPrank() {
+            // Initialize audio on the first tap (browsers require this)
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('scare-screen').style.display = 'block';
 
@@ -102,21 +130,22 @@
             let i = 0;
             const terminal = document.getElementById('terminal-output');
 
-            // Type out the "hacking" lines one by one
             const interval = setInterval(() => {
                 if (i < logs.length) {
                     terminal.innerHTML += `<p>${logs[i]}</p>`;
+                    // Play the beep unless it's the final cute line
+                    if (i < logs.length - 1) {
+                        playBeep();
+                    }
                     i++;
                 } else {
                     clearInterval(interval);
-                    // Wait 1.5 seconds after the "hack" finishes, then show the picture
                     setTimeout(showReveal, 1500);
                 }
-            }, 1000); // 1 second between each scary line
+            }, 1200); 
         }
 
         function showReveal() {
-            // Change background to cute colors and show the image/message
             document.body.style.backgroundColor = "#ffe6ea";
             document.getElementById('scare-screen').style.display = 'none';
             
